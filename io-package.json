@@ -1,0 +1,88 @@
+{
+    "common": {
+        "name": "delta-consumption",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "zh-cn": "首次出版",
+                "uk": "початковий випуск"
+            }
+        },
+        "title": "Delta Consumption",
+        "titleLang": {
+            "en": "Delta Consumption",
+            "de": "Delta-Verbrauch",
+            "ru": "Дельта потребления",
+            "pt": "Delta Consumo",
+            "nl": "Delta-verbruik",
+            "fr": "Consommation delta",
+            "it": "Delta Consumo",
+            "es": "Consumo Delta",
+            "pl": "Zużycie Delty",
+            "zh-cn": "三角消费",
+            "uk": "Дельта споживання"
+        },
+        "desc": {
+            "en": "Determinates an delta of consumption",
+            "de": "Bestimmt ein Verbrauchsdelta",
+            "ru": "Определяет дельту потребления",
+            "pt": "Determina um delta de consumo",
+            "nl": "Bepaalt een delta van verbruik",
+            "fr": "Détermine un delta de consommation",
+            "it": "Determina un delta di consumo",
+            "es": "Determina un delta de consumo",
+            "pl": "Określa deltę zużycia",
+            "zh-cn": "确定消费增量",
+            "uk": "Визначає дельту споживання"
+        },
+        "authors": [
+            "Frank Bracke <f.bracke@gmx.de>"
+        ],
+        "keywords": [
+            "Electric"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "delta-consumption.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/fbracke/ioBroker.delta-consumption/main/admin/delta-consumption.png",
+        "readme": "https://github.com/fbracke/ioBroker.delta-consumption/blob/main/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "energy",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "materialize"
+        },
+        "supportCustoms": true,
+        "eraseOnUpload": true,
+        "dependencies": [
+            {
+                "js-controller": ">=3.3.22"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=5.0.0"
+            }
+        ]
+    },
+    "native": {
+        "option1": true,
+        "option2": "42"
+    },
+    "objects": [],
+    "instanceObjects": []
+}

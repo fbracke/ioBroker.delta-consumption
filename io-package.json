@@ -64,7 +64,8 @@
         "connectionType": "local",
         "dataSource": "poll",
         "adminUI": {
-            "config": "materialize"
+            "config": "json",
+            "custom": "json"
         },
         "supportCustoms": true,
         "eraseOnUpload": true,
@@ -75,14 +76,11 @@
         ],
         "globalDependencies": [
             {
-                "admin": ">=5.0.0"
+                "admin": ">=6.0.0"
             }
         ]
     },
-    "native": {
-        "option1": true,
-        "option2": "42"
-    },
+    "native": {},
     "objects": [],
     "instanceObjects": []
 }

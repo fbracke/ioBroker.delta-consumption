@@ -14,6 +14,11 @@ let methodName = "";
 let delay = null; // Global array for all running timers
 let calcBlock = null; // Global variable to block all calculations
 const stateDeletion = true;
+const myValue = 0;
+const myTempValue = 1;
+const myCalcMode = 2;
+const stateNames = { 0: "consumption.dataValue", 1: "consumption.tempValue", 2: "consumption.calcMode" };
+const stateDescr = { 0: "Consumption", 1: "Temporary Value", 2: "Calculation-Mode" };
 
 class DeltaConsumption extends utils.Adapter {
 	/**
@@ -236,7 +241,6 @@ class DeltaConsumption extends utils.Adapter {
 	 */
 	async buildStateDetailsArray(stateID) {
 		let initError = false;
-		const methodName = "[buildStateDetailsArray]";
 		this.log.debug(`[buildStateDetailsArray] START for ${stateID}`);
 		try {
 			let stateInfo;
@@ -347,12 +351,48 @@ class DeltaConsumption extends utils.Adapter {
 			native: {},
 		});
 		// Create state for cumulative reading
-		let stateName = "consumption.value";
-		await this.doLocalStateCreate(stateID, stateName, "Consumption", true, false);
-		await this.doLocalStateCreate(stateID, stateName, "Consumption", false, false);
-		stateName = "consumption.calcMode";
-		await this.doLocalStateCreate(stateID, stateName, "Calculation in progress", true, true);
-		await this.doLocalStateCreate(stateID, stateName, "Calculation in progress", false, true);
+		await this.doLocalStateCreate(
+			stateID,
+			Object.values(stateNames)[myTempValue],
+			Object.values(stateDescr)[myTempValue],
+			true,
+			false,
+		);
+		await this.doLocalStateCreate(
+			stateID,
+			Object.values(stateNames)[myTempValue],
+			Object.values(stateDescr)[myTempValue],
+			false,
+			false,
+		);
+		await this.doLocalStateCreate(
+			stateID,
+			Object.values(stateNames)[myValue],
+			Object.values(stateDescr)[myValue],
+			true,
+			false,
+		);
+		await this.doLocalStateCreate(
+			stateID,
+			Object.values(stateNames)[myValue],
+			Object.values(stateDescr)[myValue],
+			false,
+			false,
+		);
+		await this.doLocalStateCreate(
+			stateID,
+			Object.values(stateNames)[myCalcMode],
+			Object.values(stateDescr)[myCalcMode],
+			true,
+			true,
+		);
+		await this.doLocalStateCreate(
+			stateID,
+			Object.values(stateNames)[myCalcMode],
+			Object.values(stateDescr)[myCalcMode],
+			false,
+			true,
+		);
 		// Handle calculation
 		const value = await this.getForeignStateAsync(stateID);
 		this.log.debug(
@@ -375,40 +415,28 @@ class DeltaConsumption extends utils.Adapter {
 	 * @param {string} stateRoot - Root folder location
 	 * @param {string} name - Name of state (also used for state ID !
 	 * @param {boolean} [deleteState=FALSE] - Set to true will delete the state
-	 * @param {boolean} [isBoolean=FALSE] - Create an BoolValue
+	 * @param {boolean} [isBoolean=FALSE] - Create an Bool-Value
 	 */
 	// await this.doLocalStateCreate(stateID, stateName, "Consumtion", true);
 	async doLocalStateCreate(stateID, stateRoot, name, deleteState, isBoolean) {
 		this.log.debug(`[doLocalStateCreate] START : ${JSON.stringify(this.activeStates[stateID].name)}`);
 		this.log.debug(
-			`[doLocalStateCreate] ${stateID} | root : ${stateRoot} | name : ${name}) | isBoolean : ${isBoolean}`,
-		);
-		this.log.debug(
 			`[doLocalStateCreate] stateDetails : ${JSON.stringify(this.activeStates[stateID].stateDetails)}`,
 		);
+		const myType = isBoolean ? "boolean" : "number";
+		const myDef = isBoolean ? "false" : "0";
+		this.log.debug(`[doLocalStateCreate] ${stateID} | TYPE: ${myType}`);
 		try {
 			const stateDetails = this.activeStates[stateID].stateDetails;
 			let commonData = {};
-			if (isBoolean) {
-				commonData = {
-					name: name,
-					type: "boolean",
-					role: "value",
-					read: true,
-					write: false,
-					def: false,
-				};
-			} else {
-				commonData = {
-					name: name,
-					type: "number",
-					role: "value",
-					read: true,
-					write: false,
-					unit: "kWh",
-					def: 0,
-				};
-			}
+			commonData = {
+				name: name,
+				type: myType,
+				role: "value",
+				read: true,
+				write: false,
+				def: myDef,
+			};
 			// Define if state should be created at root level
 			// Create consumption states
 			if (deleteState) {
@@ -550,16 +578,25 @@ class DeltaConsumption extends utils.Adapter {
 				return;
 			}
 			const startValue = this.activeStates[stateID].calcValues.startValue;
+			let myExit = false;
 			if (startValue !== null || startValue !== undefined) {
+				this.log.debug(`[calculationHandler] Startwert: ${startValue} >= ${JSON.stringify(stateVal.val)}`);
 				if (stateVal.val < startValue) {
-					this.log.debug(`[calculationHandler] Startwert: ${startValue} < ${JSON.stringify(stateVal.val)}`);
-					return;
+					this.log.debug(`[calculationHandler] Wert zu klein`);
+					myExit = true;
 				} else {
-					await this.setStateChangedAsync(`${stateDetails.deviceName}.consumption.calcMode`, {
-						val: true,
-						ack: true,
-					});
-					this.log.debug(`[calculationHandler] Startwert: ${startValue} >= ${JSON.stringify(stateVal.val)}`);
+					this.log.debug(
+						`calculationHandler] +Setze+ ${stateDetails.deviceName}.${
+							Object.values(stateNames)[myCalcMode]
+						}`,
+					);
+					await this.setStateChangedAsync(
+						`${stateDetails.deviceName}.${Object.values(stateNames)[myCalcMode]}`,
+						{
+							val: true,
+							ack: true,
+						},
+					);
 				}
 			}
 			let basiswert;
@@ -572,7 +609,6 @@ class DeltaConsumption extends utils.Adapter {
 			} else {
 				reading = stateVal.val;
 			}
-			this.log.debug(`[calculationHandler] value : ${JSON.stringify(reading)}`);
 			if (reading === null || reading === undefined) {
 				this.log.error(
 					`[calculationHandler] reading incorrect after conversion contact DEV and provide these info | Reading : ${JSON.stringify(
@@ -594,7 +630,6 @@ class DeltaConsumption extends utils.Adapter {
 					if (cum === null || calcValues.cumulativeValue === undefined) {
 						cum = 0;
 					}
-					this.log.debug(`[calculationHandler] cum ${cum}`);
 					reading = reading * Math.pow(10, currentExponent - targetExponent) + cum;
 				} else {
 					reading = reading * Math.pow(10, currentExponent - targetExponent);
@@ -615,11 +650,11 @@ class DeltaConsumption extends utils.Adapter {
 				);
 				return;
 			}
-			this.log.debug(
-				`[calculationHandler] reading value ${reading} after exponent multiplier : ${JSON.stringify(
-					targetExponent,
-				)}`,
-			);
+			// this.log.debug(
+			// 	`[calculationHandler] reading value ${reading} after exponent multiplier : ${JSON.stringify(
+			// 		targetExponent,
+			// 	)}`,
+			// );
 			// Check if state was already initiated
 			// Function to initiate proper memory values at device init and value reset
 			const initiateState = async () => {
@@ -643,23 +678,54 @@ class DeltaConsumption extends utils.Adapter {
 			//
 			//  frbr
 			//
-			// Add current reading to value in memory
-			if (
-				this.activeStates[stateID].calcValues.cumulativeValue == null ||
-				this.activeStates[stateID].calcValues.cumulativeValue == "NaN"
-			) {
-				basiswert = 0;
-			} else {
-				basiswert = this.activeStates[stateID].calcValues.cumulativeValue;
-			}
-			reading = reading + basiswert;
-			this.log.debug(`[calculationHandler] ${stateID} set cumulated value ${reading}`);
 			// Update current value to memory
-			this.activeStates[stateID]["calcValues"].cumulativeValue = reading;
-			await this.setStateChangedAsync(`${stateDetails.deviceName}.consumption.value`, {
-				val: reading,
-				ack: true,
-			});
+			this.log.debug(`[calculationHandler] State MyExit ${myExit} `);
+			if (myExit) {
+				// Add current reading to value in memory
+				if (
+					this.activeStates[stateID].calcValues.cumulativeValue == null ||
+					this.activeStates[stateID].calcValues.cumulativeValue == "NaN"
+				) {
+					basiswert = 0;
+				} else {
+					basiswert = this.activeStates[stateID].calcValues.cumulativeValue;
+				}
+				reading = reading + basiswert;
+				this.log.debug(`[calculationHandler] ${stateID} set cumulated value ${reading}`);
+				this.log.error(`Reset aktiv ${stateDetails.deviceName}.${Object.values(stateNames)[myValue]}`);
+				this.activeStates[stateID]["calcValues"].cumulativeValue = 0;
+				if (typeof reading === "number") {
+					await this.setStateChangedAsync(
+						`${stateDetails.deviceName}.${Object.values(stateNames)[myValue]}`,
+						{
+							val: reading,
+							ack: true,
+						},
+					);
+				}
+				await this.setStateChangedAsync(
+					`${stateDetails.deviceName}.${Object.values(stateNames)[myTempValue]}`,
+					{
+						val: 0,
+						ack: true,
+					},
+				);
+				await this.setStateChangedAsync(`${stateDetails.deviceName}.${Object.values(stateNames)[myCalcMode]}`, {
+					val: false,
+					ack: true,
+				});
+				reading = 0;
+			} else {
+				this.log.error("Addieren mit Wert " + reading);
+				this.activeStates[stateID]["calcValues"].cumulativeValue = reading;
+				await this.setStateChangedAsync(
+					`${stateDetails.deviceName}.${Object.values(stateNames)[myTempValue]}`,
+					{
+						val: reading,
+						ack: true,
+					},
+				);
+			}
 		} catch (error) {
 			this.errorHandling(
 				`[calculationHandler] ${stateID} with config ${JSON.stringify(this.activeStates[stateID])}`,

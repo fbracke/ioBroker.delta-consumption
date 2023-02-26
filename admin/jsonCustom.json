@@ -1,0 +1,40 @@
+{
+	"i18n": true,
+	"items": {
+		"_basicSettings": {
+			"newLine": true,
+			"type": "header",
+			"text": "Basic configuration",
+			"size": 4,
+			"sm": 12
+		},
+		"alias": {
+			"type": "text",
+			"label": "Alias name",
+			"help": "If no alias is set, original name will be used",
+			"sm": 6,
+			"md": 6,
+			"lg": 3
+		},
+		"startValue": {
+			"type": "number",
+			"label": "Starting trigger value",
+			"help": "Value from which the consumption calculation should start",
+			"min": 0,
+			"step": 0.1,
+			"sm": 6,
+			"md": 6,
+			"lg": 3
+		},
+		"endValue": {
+			"type": "number",
+			"label": "Ending trigger value",
+			"help": "Value from which the consumption calculation should ended",
+			"min": 0,
+			"step": 0.1,
+			"sm": 6,
+			"md": 6,
+			"lg": 3
+		}
+	}
+}

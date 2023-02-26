@@ -692,7 +692,7 @@ class DeltaConsumption extends utils.Adapter {
 				}
 				reading = reading + basiswert;
 				this.log.debug(`[calculationHandler] ${stateID} set cumulated value ${reading}`);
-				this.log.error(`Reset aktiv ${stateDetails.deviceName}.${Object.values(stateNames)[myValue]}`);
+				this.log.debug(`Reset aktiv ${stateDetails.deviceName}.${Object.values(stateNames)[myValue]}`);
 				this.activeStates[stateID]["calcValues"].cumulativeValue = 0;
 				if (typeof reading === "number") {
 					await this.setStateChangedAsync(
@@ -716,7 +716,7 @@ class DeltaConsumption extends utils.Adapter {
 				});
 				reading = 0;
 			} else {
-				this.log.error("Addieren mit Wert " + reading);
+				this.log.debug("Addieren mit Wert " + reading);
 				this.activeStates[stateID]["calcValues"].cumulativeValue = reading;
 				await this.setStateChangedAsync(
 					`${stateDetails.deviceName}.${Object.values(stateNames)[myTempValue]}`,
